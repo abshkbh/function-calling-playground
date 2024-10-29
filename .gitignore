@@ -1,3 +1,5 @@
 venv/
 .env
 out/
+protos/__pycache__
+protos/*py

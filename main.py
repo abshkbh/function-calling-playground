@@ -3,11 +3,11 @@ import grpc
 import google.generativeai as genai
 
 from dotenv import load_dotenv
-from out import api_pb2
-from out import api_pb2_grpc
+from protos import api_pb2
+from protos import api_pb2_grpc
 
 
-def StartVM(vm_name: str, server_address: str = 'localhost:50051') -> None:
+def StartVM(vm_name: str, server_address: str = "localhost:50051") -> None:
     """
     Helper function to start a VM using gRPC.
 
@@ -48,8 +48,8 @@ if __name__ == "__main__":
 
     try:
         response = StartVM("test", server_address)
-        print(f'StartVM response: {response}')
+        print(f"StartVM response: {response}")
     except Exception as e:
-        print(f'Error: {e}')
+        print(f"Error: {e}")
         exit(1)
     exit(0)

@@ -1,14 +1,12 @@
-OUT_DIR := out
 PROTOS_DIR := protos
 
 .PHONY: protos
 protos:
-	mkdir -p $(OUT_DIR)
-	python -m grpc_tools.protoc -I. --python_out=$(OUT_DIR) --grpc_python_out=$(OUT_DIR) api.proto
+	python -m grpc_tools.protoc --proto_path=. --python_out=. --grpc_python_out=. $(PROTOS_DIR)/api.proto
 
 .PHONY: clean
 clean:
-	rm -rf $(OUT_DIR)
+	rm -rf $(PROTOS_DIR)/*py $(PROTOS_DIR)/__pycache__
 
 .PHONY: all
 all: protos
