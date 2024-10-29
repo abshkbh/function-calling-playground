@@ -1,36 +1,55 @@
 import os
+import grpc
 import google.generativeai as genai
+
 from dotenv import load_dotenv
+from out import api_pb2
+from out import api_pb2_grpc
 
-load_dotenv(".env")
-genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
 
-
-def set_light_values(brightness: str, color_temp: str):
-    """Set the brightness and color temperature of a room light. (mock API).
+def StartVM(vm_name: str, server_address: str = 'localhost:50051') -> None:
+    """
+    Helper function to start a VM using gRPC.
 
     Args:
-        brightness: Light level from 0 to 100. Zero is off and 100 is full brightness
-        color_temp: Color temperature of the light fixture, which can be `daylight`, `cool` or `warm`.
+        vm_name (str): The name of the VM to start.
+        server_address (str): The address of the gRPC server. Defaults to 'localhost:50051'.
 
     Returns:
-        A dictionary containing the set brightness and color temperature.
+        The response from the server (VMResponse).
+
+    Raises:
+        grpc.RpcError: If there's an error in the gRPC call.
     """
-    return {
-        "brightness": brightness,
-        "colorTemperature": color_temp
-    }
+    # Create a gRPC channel
+    with grpc.insecure_channel(server_address) as channel:
+        # Create a stub (client)
+        stub = api_pb2_grpc.VMManagementServiceStub(channel)
+
+        # Create a VMRequest
+        request = api_pb2.VMRequest(vm_name=vm_name)
+
+        try:
+            # Make the gRPC call
+            response = stub.StartVM(request)
+            return response
+        except grpc.RpcError as e:
+            raise RuntimeError(f"failed to start VM: {e}")
 
 
-model = genai.GenerativeModel(
-    model_name="gemini-1.5-pro-002",
-    tools=[set_light_values],
-)
+def configure_apis() -> None:
+    genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
 
-chat = model.start_chat()
-response = chat.send_message('Dim the lights so the room feels cozy and warm.')
-for part in response.parts:
-    if fn := part.function_call:
-        args = ", ".join(f"{key}={val}" for key, val in fn.args.items())
-        print(f"{fn.name}({args})")
 
+if __name__ == "__main__":
+    load_dotenv(".env")
+    configure_apis()
+    server_address = os.getenv("CHV_LAMBDA_SERVER_ADDRESS", "localhost:50051")
+
+    try:
+        response = StartVM("test", server_address)
+        print(f'StartVM response: {response}')
+    except Exception as e:
+        print(f'Error: {e}')
+        exit(1)
+    exit(0)
