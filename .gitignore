@@ -3,3 +3,4 @@ venv/
 out/
 protos/__pycache__
 protos/*py
+__pycache__
